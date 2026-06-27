@@ -1,8 +1,7 @@
 # nvim-config
 
 My personal Neovim configuration, built around Neovim's built-in
-[`vim.pack`](https://neovim.io/doc/user/pack.html) plugin manager — no third-party
-package manager required.
+[`vim.pack`](https://neovim.io/doc/user/pack.html) plugin manager.
 
 ## Requirements
 
