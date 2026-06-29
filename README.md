@@ -3,6 +3,11 @@
 My personal Neovim configuration, built around Neovim's built-in
 [`vim.pack`](https://neovim.io/doc/user/pack.html) plugin manager.
 
+> **Note:** this config is currently developed and used **mainly on Windows**.
+> It should work on Linux/macOS as well, but those platforms get less testing,
+> so expect to tweak a few things (e.g. the `pwsh` shell setup below only
+> applies on Windows and is simply skipped elsewhere).
+
 ## Requirements
 
 - **Neovim ≥ 0.12** (required for `vim.pack`)

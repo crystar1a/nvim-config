@@ -131,7 +131,7 @@ map("n", "<leader>qc", "<cmd>cclose<CR>", { desc = "Close quickfix" })
 map("n", "]q", "<cmd>cnext<CR>", { desc = "Next quickfix" })
 map("n", "[q", "<cmd>cprev<CR>", { desc = "Prev quickfix" })
 
--- Toggle terminal from bottom window
+-- Toggle terminal from bottom window, opened in the current file's directory
 map("n", "<leader>tt", function()
 	local wins = vim.api.nvim_list_wins()
 	for _, win in ipairs(wins) do
@@ -141,11 +141,15 @@ map("n", "<leader>tt", function()
 			return
 		end
 	end
-	vim.cmd("below split | terminal")
+
+	-- Use the current buffer's directory, falling back to cwd for unnamed buffers
+	local name = vim.api.nvim_buf_get_name(0)
+	local dir = name ~= "" and vim.fn.fnamemodify(name, ":p:h") or vim.fn.getcwd()
+
+	vim.cmd("below split")
+	vim.cmd("lcd " .. vim.fn.fnameescape(dir)) -- window-local cwd, only affects this split
+	vim.cmd("terminal")
 end, { desc = "[T]oggle [T]erminal" })
-map("t", "<Esc><Esc>", function()
-	vim.api.nvim_win_close(0, false)
-end, { desc = "Close terminal" })
 
 -- ===========
 -- 3. AUTOCMDS
@@ -534,8 +538,14 @@ require("neo-tree").setup({
 	},
 	filesystem = {
 		follow_current_file = { enabled = true }, -- auto-reveal the current file in the tree
-		hide_dotfiles = false,
 		use_libuv_file_watcher = true, -- auto-refresh tree on filesystem changes
+		filtered_items = {
+			visible = true, -- show fileted items grayed out instead of hiding them outright
+			show_hidden_count = true,
+			hide_dotfiles = false, -- show dotfiles (e.g. .gitignore, .luaarc.json)
+			hide_hidden = false, -- show Windows-attribute hidden items (e.g. Appdata)
+			hide_gitignored = true, -- show files ignored but .gitignore
+		},
 	},
 })
 map("n", "<leader>te", "<cmd>Neotree toggle<CR>", { desc = "[T]oggle [E]xplorer" })
