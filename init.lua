@@ -131,26 +131,6 @@ map("n", "<leader>qc", "<cmd>cclose<CR>", { desc = "Close quickfix" })
 map("n", "]q", "<cmd>cnext<CR>", { desc = "Next quickfix" })
 map("n", "[q", "<cmd>cprev<CR>", { desc = "Prev quickfix" })
 
--- Toggle terminal from bottom window, opened in the current file's directory
-map("n", "<leader>tt", function()
-	local wins = vim.api.nvim_list_wins()
-	for _, win in ipairs(wins) do
-		local buf = vim.api.nvim_win_get_buf(win)
-		if vim.bo[buf].buftype == "terminal" then
-			vim.api.nvim_win_close(win, false)
-			return
-		end
-	end
-
-	-- Use the current buffer's directory, falling back to cwd for unnamed buffers
-	local name = vim.api.nvim_buf_get_name(0)
-	local dir = name ~= "" and vim.fn.fnamemodify(name, ":p:h") or vim.fn.getcwd()
-
-	vim.cmd("below split")
-	vim.cmd("lcd " .. vim.fn.fnameescape(dir)) -- window-local cwd, only affects this split
-	vim.cmd("terminal")
-end, { desc = "[T]oggle [T]erminal" })
-
 -- ===========
 -- 3. AUTOCMDS
 -- ===========
@@ -185,17 +165,6 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 		if mark[1] > 0 and mark[1] <= lcount then
 			pcall(vim.api.nvim_win_set_cursor, 0, mark)
 		end
-	end,
-})
-
--- Disable line numbers/signcolumn and enter insert mode in terminal buffers
-vim.api.nvim_create_autocmd("TermOpen", {
-	group = augroup("term_options"),
-	callback = function()
-		vim.o.number = false
-		vim.o.relativenumber = false
-		vim.o.signcolumn = "no"
-		vim.cmd("startinsert")
 	end,
 })
 
@@ -496,6 +465,7 @@ require("guess-indent").setup({})
 -- Smear Cursor
 vim.pack.add({ "https://github.com/sphamba/smear-cursor.nvim" })
 require("smear_cursor").setup({
+	enabled = false,
 	cursor_color = "#ffffff",
 	gradient_exponent = 0,
 	particles_enabled = true,
@@ -509,6 +479,61 @@ require("smear_cursor").setup({
 	particle_damping = 0.1,
 	particle_gravity = 50,
 })
+
+-- Toggleterm: persistent, toggleable terminals
+vim.pack.add({ gh("akinsho/toggleterm.nvim") })
+require("toggleterm").setup({
+	size = function(term)
+		if term.direction == "horizontal" then
+			return 13 -- height in lines
+		elseif term.direction == "vertical" then
+			return math.floor(vim.o.columns * 0.2) -- width = 20% of the screen
+		end
+	end,
+	-- open_mapping removed: <A-t> is mapped below so we can pass the file's directory
+	direction = "horizontal", -- "horizontal" | "vertical" | "float" | "tab"
+	shade_terminals = false, -- keep the transparent background from dracula
+	start_in_insert = true,
+	persist_mode = false, -- always enter insert mode when reopening
+	float_opts = { border = "rounded" },
+})
+
+-- Toggle the terminal, opening it in the directory of the file being edited
+local function toggle_term_here()
+	-- Already inside a terminal: just hide it, don't send a cd
+	if vim.bo.buftype == "terminal" then
+		require("toggleterm").toggle(1)
+		return
+	end
+	-- Real file buffers use their directory; unnamed/special buffers fall back to cwd
+	local name = vim.api.nvim_buf_get_name(0)
+	local dir = (name ~= "" and vim.bo.buftype == "") and vim.fn.fnamemodify(name, ":p:h") or vim.fn.getcwd()
+	require("toggleterm").toggle(1, nil, dir)
+end
+
+map("n", "<leader>tt", toggle_term_here, { desc = "[T]oggle [T]erminal" })
+map({ "n", "t" }, "<A-t>", toggle_term_here, { desc = "Toggle terminal" })
+map("n", "<leader>tf", "<cmd>ToggleTerm direction=float<CR>", { desc = "[T]oggle [F]loat terminal" })
+map("n", "<leader>tv", "<cmd>ToggleTerm direction=vertical<CR>", { desc = "[T]oggle [V]ertical terminal" })
+
+-- Buffer-local keymaps for toggleterm terminals only
+vim.api.nvim_create_autocmd("TermOpen", {
+	group = augroup("toggleterm_keys"),
+	pattern = "term://*toggleterm#*",
+	callback = function(ev)
+		local o = { buffer = ev.buf, silent = true }
+		vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], o) -- leave terminal mode
+		-- Jump between windows from terminal mode
+		vim.keymap.set("t", "<A-h>", [[<C-\><C-n><C-w>h]], o)
+		vim.keymap.set("t", "<A-j>", [[<C-\><C-n><C-w>j]], o)
+		vim.keymap.set("t", "<A-k>", [[<C-\><C-n><C-w>k]], o)
+		vim.keymap.set("t", "<A-l>", [[<C-\><C-n><C-w>l]], o)
+	end,
+})
+
+-- Alt+j / Alt+k from normal mode to reach the terminal / editor
+map("n", "<A-j>", "<C-w>j", { desc = "Window down" })
+map("n", "<A-k>", "<C-w>k", { desc = "Window up" })
 
 -- ===========================
 -- 6. FILE EXPLORER - neo-tree
@@ -774,9 +799,15 @@ vim.api.nvim_create_autocmd("LspAttach", {
 require("mason").setup({ ui = { border = "rounded" } })
 
 -- Make sure all configured LSP servers (plus stylua) are installed
-local ensure_installed = vim.tbl_keys(servers)
-vim.list_extend(ensure_installed, { "stylua" })
-require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
+require("mason-tool-installer").setup({
+	ensure_installed = {
+		"lua-language-server", -- lua_ls
+		"stylua",
+		-- "pyright",                    -- pyright
+		-- "typescript-language-server", -- ts_ls
+		-- "rust-analyzer",              -- rust_analyzer
+	},
+})
 
 -- Register and enable each configured LSP server
 for name, server in pairs(servers) do
