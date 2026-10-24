@@ -10,13 +10,13 @@ My personal Neovim configuration, built around Neovim's built-in
 
 ## Requirements
 
-- **Neovim ≥ 0.12** (required for `vim.pack`)
+- **Neovim ≥ 0.12** (required for `vim.pack` and modular LSP config)
 - [`git`](https://git-scm.com/) — used by `vim.pack` to clone/update plugins
 - [Nerd Font](https://www.nerdfonts.com/) — for file icons and statusline glyphs
-- A C compiler / `make` — needed to build `telescope-fzf-native.nvim` (and `LuaSnip`'s
-  optional `jsregexp` on non-Windows)
+- A C compiler / `make` — needed to build `telescope-fzf-native.nvim`
 - [`ripgrep`](https://github.com/BurntSushi/ripgrep) — used by Telescope's live grep
 - LSP servers / formatters are installed automatically via `mason.nvim` on first launch
+- **Windows (C/C++):** MSYS2 UCRT64 with `clang-tools-extra` for `clangd`, or install via `scoop install clangd`
 
 > **Windows users:** the config sets the built-in terminal (`:terminal`) and shell
 > commands (`:!`) to use `pwsh` (PowerShell 7) instead of `cmd.exe`. Make sure `pwsh`
@@ -45,7 +45,7 @@ in the background.
 
 ## Structure
 
-Everything lives in a single `init.lua`, organized into numbered sections:
+Everything lives in `init.lua` plus modular LSP configs in `lsp/`, organized into numbered sections:
 
 | # | Section | Description |
 |---|---|---|
@@ -54,13 +54,17 @@ Everything lives in a single `init.lua`, organized into numbered sections:
 | 2 | Keymaps | Window/buffer navigation, formatting, quickfix, terminal toggle |
 | 3 | Autocmds | Yank highlight, cursor restore, terminal setup, content-based filetype detection for unsaved buffers |
 | 4 | Plugin manager | `vim.pack` build hooks (`PackChanged`) for plugins needing compilation |
-| 5 | UI plugins | Colorscheme, statusline, bufferline, git signs, indent guides, etc. |
-| 6 | File explorer | `neo-tree.nvim` |
-| 7 | Treesitter | Syntax highlighting, indentation, folding, textobjects |
-| 8 | Telescope | Fuzzy finder for files, grep, buffers, diagnostics, etc. |
-| 9 | LSP | `nvim-lspconfig` + `mason.nvim` server management |
-| 10 | Completion | `nvim-cmp` + `LuaSnip` |
-| 11 | Formatting | `conform.nvim` (format-on-save for Lua/Python) |
+| 5 | UI plugins | Colorscheme, statusline, bufferline, indent guides, etc. |
+| 6 | Treesitter | Syntax highlighting, indentation, folding, textobjects |
+| 7 | Telescope | Fuzzy finder for files, grep, buffers, diagnostics, etc. |
+| 8 | LSP | `nvim-lspconfig` + `mason.nvim` server management (modular configs in `lsp/`) |
+| 9 | Completion | `nvim-cmp` (LSP, buffer, path, cmdline sources) |
+| 10 | Formatting | `conform.nvim` (format-on-save for Lua/Python) |
+
+**Modular LSP configs** (`lsp/` directory):
+- `lsp/clangd.lua` — C/C++ with MSYS2 UCRT64 paths
+- `lsp/pyright.lua` — Python type checking
+- `lsp/lua_ls.lua` — Lua/Neovim runtime API
 
 ## Plugin manager & lockfile
 
@@ -79,38 +83,28 @@ vim.pack.update(nil, { target = "lockfile", force = true })
 ## Key plugins
 
 - **UI:** `dracula.nvim`, `lualine.nvim`, `bufferline.nvim`, `indent-blankline.nvim`,
-  `which-key.nvim`, `nvim-web-devicons`, `smear-cursor.nvim`, `neoscroll.nvim`,
-  `nvim-scrollview`, `todo-comments.nvim`, `guess-indent.nvim`
-- **Editing:** `nvim-autopairs`, `gitsigns.nvim`
-- **Navigation:** `telescope.nvim` (+ `telescope-fzf-native.nvim`,
-  `telescope-ui-select.nvim`), `neo-tree.nvim` (+ `plenary.nvim`, `nui.nvim`)
+  `which-key.nvim`, `nvim-web-devicons`, `neoscroll.nvim`, `nvim-scrollview`, `todo-comments.nvim`
+- **Navigation:** `telescope.nvim` (+ `telescope-fzf-native.nvim`, `telescope-ui-select.nvim`)
 - **Syntax:** `nvim-treesitter` (+ `nvim-treesitter-textobjects`)
 - **LSP/Completion:** `nvim-lspconfig`, `mason.nvim`, `mason-lspconfig.nvim`,
   `mason-tool-installer.nvim`, `fidget.nvim`, `nvim-cmp` (+ `cmp-nvim-lsp`,
-  `cmp-buffer`, `cmp-path`, `cmp-cmdline`, `cmp_luasnip`), `LuaSnip` (+
-  `friendly-snippets`)
-- **Formatting:** `conform.nvim` (`stylua` for Lua)
+  `cmp-buffer`, `cmp-path`, `cmp-cmdline`)
+- **Formatting:** `conform.nvim` (`stylua` for Lua, `clang-format` for C/C++)
 
 The full pinned list with exact commits is in `nvim-pack-lock.json`.
 
 ## LSP servers
 
-Currently configured (see the `servers` table in `init.lua`):
+Configured via modular configs in `lsp/` (enabled in `init.lua`):
 
 - `lua_ls` — tuned to recognize the Neovim runtime API when editing this config
   itself, but defers to a project's own `.luarc.json`/`.luarc.jsonc` if present
+- `clangd` — C/C++ with MSYS2 UCRT64 include paths (`C:/msys64/ucrt64`)
+- `pyright` — Python type checking (basic mode)
 
-Add more servers by appending to the `servers` table, e.g.:
+Add more servers by creating `lsp/<name>.lua` and adding to `vim.lsp.enable()` in `init.lua`.
 
-```lua
-local servers = {
-  lua_ls = { ... },
-  pyright = {},
-  ts_ls = {},
-}
-```
-
-`mason-tool-installer.nvim` automatically installs whatever is added to that table.
+`mason-tool-installer.nvim` automatically installs LSP servers listed in its `ensure_installed`.
 
 ## Keymaps
 
@@ -135,11 +129,10 @@ via `which-key.nvim`.
 | `<leader>tt` | Normal | Toggle terminal split |
 | `<Esc><Esc>` | Terminal | Close terminal window |
 
-### File explorer & search
+### Search (Telescope)
 
 | Keymap | Action |
 |---|---|
-| `<leader>te` | Toggle file explorer (`neo-tree.nvim`) |
 | `<leader>sf` | Find files |
 | `<leader>sg` | Live grep |
 | `<leader>sb` | Search open buffers |
@@ -150,16 +143,6 @@ via `which-key.nvim`.
 | `<leader>sw` | Search word under cursor |
 | `<leader><leader>` | Switch buffer |
 | `<leader>/` | Fuzzy search current buffer |
-
-### Git (`gitsigns.nvim`, buffer-local)
-
-| Keymap | Action |
-|---|---|
-| `]c` / `[c` | Next / previous hunk |
-| `<leader>hs` | Stage hunk |
-| `<leader>hr` | Reset hunk |
-| `<leader>hb` | Blame line |
-| `<leader>hd` | Diff this |
 
 ### LSP (buffer-local, on attach)
 
@@ -186,6 +169,19 @@ via `which-key.nvim`.
 | `]f` / `[f` | Next/previous function start |
 | `]c` / `[c` | Next/previous class start |
 
+## C/C++ setup (Windows + MSYS2)
+
+For `clangd` to work with MSYS2 UCRT64:
+
+1. Install: `pacman -S mingw-w64-ucrt-x86_64-clang-tools-extra`
+2. Add `C:/msys64/ucrt64/bin` to system PATH
+3. In CMake projects, generate compile commands:
+   ```bash
+   cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B build
+   cmd /c mklink compile_commands.json build\compile_commands.json  # Admin
+   ```
+4. Or create `.clangd` in project root (see `lsp/clangd.lua` for fallback flags)
+
 ## Notes
 
 - Search highlighting (`hlsearch`) is enabled; press `<Esc>` in Normal mode to
@@ -196,6 +192,7 @@ via `which-key.nvim`.
   `guesses` table in the Autocmds section to extend it to more languages.
 - Format-on-save is enabled only for Lua and Python; other filetypes format
   on demand via `<leader>f`.
+- This config uses **modular LSP** (Neovim 0.11+): each server config lives in `lsp/<name>.lua`.
 
 ## License
 
