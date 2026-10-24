@@ -62,9 +62,9 @@ Everything lives in `init.lua` plus modular LSP configs in `lsp/`, organized int
 | 10 | Formatting | `conform.nvim` (format-on-save for Lua/Python) |
 
 **Modular LSP configs** (`lsp/` directory):
-- `lsp/clangd.lua` — C/C++ with MSYS2 UCRT64 paths
-- `lsp/pyright.lua` — Python type checking
-- `lsp/lua_ls.lua` — Lua/Neovim runtime API
+- `lsp/clangd.lua` C/C++ with MSYS2 UCRT64 paths
+- `lsp/pyright.lua` Python type checking
+- `lsp/lua_ls.lua` Lua/Neovim runtime API
 
 ## Plugin manager & lockfile
 
@@ -97,10 +97,10 @@ The full pinned list with exact commits is in `nvim-pack-lock.json`.
 
 Configured via modular configs in `lsp/` (enabled in `init.lua`):
 
-- `lua_ls` — tuned to recognize the Neovim runtime API when editing this config
+- `lua_ls` tuned to recognize the Neovim runtime API when editing this config
   itself, but defers to a project's own `.luarc.json`/`.luarc.jsonc` if present
-- `clangd` — C/C++ with MSYS2 UCRT64 include paths (`C:/msys64/ucrt64`)
-- `pyright` — Python type checking (basic mode)
+- `clangd` C/C++ with MSYS2 UCRT64 include paths (`C:/msys64/ucrt64`)
+- `pyright` Python type checking (basic mode)
 
 Add more servers by creating `lsp/<name>.lua` and adding to `vim.lsp.enable()` in `init.lua`.
 
