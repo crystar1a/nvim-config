@@ -322,7 +322,7 @@ require("lualine").setup({
 		component_separators = { left = "", right = "" },
 		section_separators = { left = "", right = "" },
 		globalstatus = true,
-		disabled_filetypes = { statusline = { "neo-tree", "alpha" } },
+		disabled_filetypes = { statusline = { "alpha" } },
 	},
 	sections = {
 		lualine_a = { "mode" },
@@ -366,64 +366,13 @@ require("bufferline").setup({
 	},
 })
 
--- Git change indicators in the sign column
-vim.pack.add({ gh("lewis6991/gitsigns.nvim") })
-require("gitsigns").setup({
-	signs = {
-		add = { text = "▎" },
-		change = { text = "▎" },
-		delete = { text = "" },
-		topdelete = { text = "" },
-		changedelete = { text = "▎" },
-		untracked = { text = "▎" },
-	},
-	on_attach = function(bufnr)
-		local gs = package.loaded.gitsigns
-		-- Helper for buffer-local gitsigns keymaps
-		local bmap = function(mode, l, r, desc)
-			map(mode, l, r, { buffer = bufnr, desc = desc })
-		end
-		bmap("n", "]c", function()
-			if vim.wo.diff then
-				vim.cmd("normal! ]c") -- fall back to native diff navigation when in diff mode
-			else
-				gs.next_hunk()
-			end
-		end, "Next hunk")
-		bmap("n", "[c", function()
-			if vim.wo.diff then
-				vim.cmd("normal! [c")
-			else
-				gs.prev_hunk()
-			end
-		end, "Prev hunk")
-		bmap("n", "<leader>hs", gs.stage_hunk, "Stage hunk")
-		bmap("n", "<leader>hr", gs.reset_hunk, "Reset hunk")
-		bmap("n", "<leader>hb", gs.blame_line, "Blame line")
-		bmap("n", "<leader>hd", gs.diffthis, "Diff this")
-	end,
-})
-
 -- Indentation guide lines
 vim.pack.add({ gh("lukas-reineke/indent-blankline.nvim") })
 require("ibl").setup({
 	indent = { char = "│", tab_char = "│" },
 	scope = { enabled = true, show_start = false, show_end = false },
 	exclude = {
-		filetypes = { "help", "neo-tree", "lazy", "mason", "notify", "toggleterm" },
-	},
-})
-
--- Auto-close brackets/quotes
-vim.pack.add({ gh("windwp/nvim-autopairs") })
-require("nvim-autopairs").setup({
-	check_ts = true, -- use treesitter to check context before pairing
-	ts_config = { lua = { "string" }, javascript = { "template_string" } },
-	fast_wrap = {
-		map = "<M-e>",
-		chars = { "{", "[", "(", '"', "'" },
-		pattern = [=[[%'%"%>%]%)%}%,]]=],
-		end_key = "$",
+		filetypes = { "help", "lazy", "mason", "notify", "toggleterm" },
 	},
 })
 
@@ -452,32 +401,9 @@ require("which-key").setup({
 -- Group labels shown in the which-key popup
 require("which-key").add({
 	{ "<leader>b", group = "Buffer" },
-	{ "<leader>h", group = "Git Hunk" },
 	{ "<leader>s", group = "Search" },
 	{ "<leader>t", group = "Toggle" },
 	{ "<leader>q", group = "Quickfix" },
-})
-
--- Auto-detect indentation settings per file
-vim.pack.add({ gh("NMAC427/guess-indent.nvim") })
-require("guess-indent").setup({})
-
--- Smear Cursor
-vim.pack.add({ "https://github.com/sphamba/smear-cursor.nvim" })
-require("smear_cursor").setup({
-	enabled = false,
-	cursor_color = "#ffffff",
-	gradient_exponent = 0,
-	particles_enabled = true,
-	particle_spread = 1,
-	particles_per_second = 100,
-	particles_per_length = 50,
-	particle_max_lifetime = 1500,
-	particle_max_initial_velocity = 10,
-	particle_velocity_from_cursor = 0,
-	particle_random_velocity = 300,
-	particle_damping = 0.1,
-	particle_gravity = 50,
 })
 
 -- Toggleterm: persistent, toggleable terminals
@@ -485,9 +411,9 @@ vim.pack.add({ gh("akinsho/toggleterm.nvim") })
 require("toggleterm").setup({
 	size = function(term)
 		if term.direction == "horizontal" then
-			return 13 -- height in lines
+			return 15 -- height in lines
 		elseif term.direction == "vertical" then
-			return math.floor(vim.o.columns * 0.2) -- width = 20% of the screen
+			return math.floor(vim.o.columns * 0.4) -- width = 40% of the screen
 		end
 	end,
 	-- open_mapping removed: <A-t> is mapped below so we can pass the file's directory
@@ -535,48 +461,8 @@ vim.api.nvim_create_autocmd("TermOpen", {
 map("n", "<A-j>", "<C-w>j", { desc = "Window down" })
 map("n", "<A-k>", "<C-w>k", { desc = "Window up" })
 
--- ===========================
--- 6. FILE EXPLORER - neo-tree
--- ===========================
-
-vim.pack.add({ gh("nvim-lua/plenary.nvim") }) -- dependency: utility functions library
-vim.pack.add({ gh("MunifTanjim/nui.nvim") }) -- dependency: UI component library
-vim.pack.add({ gh("nvim-neo-tree/neo-tree.nvim") })
-require("neo-tree").setup({
-	close_if_last_window = true, -- close neo-tree if it's the only window left
-	popup_border_style = "rounded",
-	window = { position = "left", width = 30 },
-	default_component_configs = {
-		git_status = {
-			symbols = {
-				added = "",
-				modified = "",
-				deleted = "✖",
-				renamed = "",
-				untracked = "",
-				ignored = "",
-				unstaged = "",
-				staged = "",
-				conflict = "",
-			},
-		},
-	},
-	filesystem = {
-		follow_current_file = { enabled = true }, -- auto-reveal the current file in the tree
-		use_libuv_file_watcher = true, -- auto-refresh tree on filesystem changes
-		filtered_items = {
-			visible = true, -- show fileted items grayed out instead of hiding them outright
-			show_hidden_count = true,
-			hide_dotfiles = false, -- show dotfiles (e.g. .gitignore, .luaarc.json)
-			hide_hidden = false, -- show Windows-attribute hidden items (e.g. Appdata)
-			hide_gitignored = true, -- show files ignored but .gitignore
-		},
-	},
-})
-map("n", "<leader>te", "<cmd>Neotree toggle<CR>", { desc = "[T]oggle [E]xplorer" })
-
 -- ================================================
--- 7. TREESITTER - syntax highlight + indent + fold
+-- 6. TREESITTER - syntax highlight + indent + fold
 -- ================================================
 
 vim.pack.add({ gh("nvim-treesitter/nvim-treesitter") })
@@ -649,6 +535,7 @@ vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 -- 8. TELESCOPE - fuzzy finder
 -- ===========================
 
+vim.pack.add({ gh("nvim-lua/plenary.nvim") }) -- dependency for telescope
 vim.pack.add({ gh("nvim-telescope/telescope.nvim") })
 vim.pack.add({ gh("nvim-telescope/telescope-fzf-native.nvim") }) -- native FZF sorter for faster matching
 vim.pack.add({ gh("nvim-telescope/telescope-ui-select.nvim") }) -- use telescope for vim.ui.select prompts
@@ -715,40 +602,8 @@ vim.pack.add({
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 -- nvim-cmp will extend these capabilities automatically once it loads (see section 10)
 
-local servers = {
-	lua_ls = {
-		on_init = function(client)
-			client.server_capabilities.documentFormattingProvider = false -- formatting handled by conform/stylua instead
-			if client.workspace_folders then
-				local path = client.workspace_folders[1].name
-				if
-					path ~= vim.fn.stdpath("config")
-					and (vim.uv.fs_stat(path .. "/.luarc.json") or vim.uv.fs_stat(path .. "/.luarc.jsonc"))
-				then
-					return -- respect the project's own .luarc.json if present
-				end
-			end
-			-- Otherwise, apply settings tuned for editing this Neovim config itself
-			client.config.settings.Lua = vim.tbl_deep_extend("force", client.config.settings.Lua or {}, {
-				runtime = { version = "LuaJIT" },
-				workspace = {
-					checkThirdParty = false,
-					library = vim.list_extend(vim.api.nvim_get_runtime_file("", true), {
-						"${3rd}/luv/library",
-						"${3rd}/busted/library",
-					}),
-				},
-			})
-		end,
-		settings = {
-			Lua = { format = { enable = true } },
-		},
-	},
-	-- Add more LSP servers here:
-	-- pyright = {},
-	-- ts_ls = {},
-	-- rust_analyzer = {},
-}
+-- Enable LSP servers (configs loaded from lsp/ directory)
+vim.lsp.enable({ "lua_ls", "clangd", "pyright" })
 
 -- Set up keymaps and highlighting whenever an LSP client attaches to a buffer
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -802,19 +657,11 @@ require("mason").setup({ ui = { border = "rounded" } })
 require("mason-tool-installer").setup({
 	ensure_installed = {
 		"lua-language-server", -- lua_ls
+		"clangd",              -- clangd
+		"pyright",             -- pyright
 		"stylua",
-		-- "pyright",                    -- pyright
-		-- "typescript-language-server", -- ts_ls
-		-- "rust-analyzer",              -- rust_analyzer
 	},
 })
-
--- Register and enable each configured LSP server
-for name, server in pairs(servers) do
-	server.capabilities = capabilities
-	vim.lsp.config(name, server)
-	vim.lsp.enable(name)
-end
 
 -- ===================================
 -- 10. COMPLETION - nvim.cpm + LuaSnip
@@ -826,32 +673,15 @@ vim.pack.add({
 	gh("hrsh7th/cmp-buffer"), -- buffer words completion source
 	gh("hrsh7th/cmp-path"), -- filesystem path completion source
 	gh("hrsh7th/cmp-cmdline"), -- command-line completion source
-	gh("saadparwaiz1/cmp_luasnip"), -- snippet completion source
-	gh("L3MON4D3/LuaSnip"), -- snippet engine
-	gh("rafamadriz/friendly-snippets"), -- community snippet collection
 })
 
--- Load the VSCode-style snippet collection
-require("luasnip.loaders.from_vscode").lazy_load()
-
 local cmp = require("cmp")
-local luasnip = require("luasnip")
 
 -- Merge LSP capabilities into cmp's capabilities
 local cmp_lsp_caps = require("cmp_nvim_lsp").default_capabilities()
 capabilities = vim.tbl_deep_extend("force", capabilities, cmp_lsp_caps)
--- Re-apply the updated capabilities to all already-registered servers
-for name, server in pairs(servers) do
-	server.capabilities = capabilities
-	vim.lsp.config(name, server)
-end
 
 cmp.setup({
-	snippet = {
-		expand = function(args)
-			luasnip.lsp_expand(args.body)
-		end,
-	},
 	completion = { completeopt = "menu,menuone,noinsert" },
 	window = {
 		completion = cmp.config.window.bordered(),
@@ -865,12 +695,9 @@ cmp.setup({
 		["<C-Space>"] = cmp.mapping.complete(),
 		["<C-e>"] = cmp.mapping.abort(),
 		["<CR>"] = cmp.mapping.confirm({ select = false }), -- only confirm when an item is explicitly selected
-		-- Tab to navigate snippet placeholder fields
 		["<Tab>"] = cmp.mapping(function(fallback)
 			if cmp.visible() then
 				cmp.select_next_item()
-			elseif luasnip.expand_or_locally_jumpable() then
-				luasnip.expand_or_jump()
 			else
 				fallback()
 			end
@@ -878,8 +705,6 @@ cmp.setup({
 		["<S-Tab>"] = cmp.mapping(function(fallback)
 			if cmp.visible() then
 				cmp.select_prev_item()
-			elseif luasnip.locally_jumpable(-1) then
-				luasnip.jump(-1)
 			else
 				fallback()
 			end
@@ -887,7 +712,6 @@ cmp.setup({
 	}),
 	sources = cmp.config.sources({
 		{ name = "nvim_lsp", priority = 1000 },
-		{ name = "luasnip", priority = 750 },
 		{ name = "buffer", priority = 500, keyword_length = 3 },
 		{ name = "path", priority = 250 },
 	}),
@@ -925,7 +749,6 @@ cmp.setup({
 			-- Label showing which source the completion came from
 			item.menu = ({
 				nvim_lsp = "[LSP]",
-				luasnip = "[Snip]",
 				buffer = "[Buf]",
 				path = "[Path]",
 			})[entry.source.name]
@@ -945,12 +768,8 @@ cmp.setup.cmdline(":", {
 	sources = cmp.config.sources({ { name = "path" } }, { { name = "cmdline" } }),
 })
 
--- Integrate autopairs with cmp so confirming a completion closes pairs correctly
-local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
-
 -- ===========================
--- 11. FORTTING - conform.nvim
+-- 11. FORMATTING - conform.nvim
 -- ===========================
 
 vim.pack.add({ gh("stevearc/conform.nvim") })
