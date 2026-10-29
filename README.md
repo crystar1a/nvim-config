@@ -64,9 +64,9 @@ Everything lives in `init.lua` plus modular LSP configs in `lsp/`, organized int
 | 11 | Terminal | `toggleterm.nvim` persistent terminals with file-dir start |
 
 **Modular LSP configs** (`lsp/` directory):
-- `lsp/clangd.lua` — C/C++ with MSYS2 UCRT64 paths
-- `lsp/pyright.lua` — Python type checking
-- `lsp/lua_ls.lua` — Lua/Neovim runtime API
+- `lsp/clangd.lua` C/C++ with MSYS2 UCRT64 paths
+- `lsp/pyright.lua` Python type checking
+- `lsp/lua_ls.lua` Lua/Neovim runtime API
 
 ## Plugin manager & lockfile
 
