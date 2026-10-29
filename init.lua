@@ -437,6 +437,17 @@ vim.api.nvim_create_autocmd("TermOpen", {
 	callback = function(ev)
 		local o = { buffer = ev.buf, silent = true }
 		vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], o) -- exit terminal mode
+		vim.keymap.set("t", "<C-q>", function()
+			local job = vim.b[ev.buf].terminal_job_id
+			vim.api.nvim_chan_send(job, "\15") -- Ctrl+o: Open transcript mode
+			vim.defer_fn(function()
+				vim.api.nvim_chan_send(job, "[") -- write full conversation to scrollback
+			end, 150)
+			vim.defer_fn(function()
+				vim.cmd.stopinsert()
+				vim.cmd("normal! G") -- jump to last lune of the buffer
+			end, 600)
+		end, vim.tbl_extend("force", o, { desc = "Terminal: dump transcript to scrollback" }))
 		-- Jump between windows from terminal mode
 		vim.keymap.set("t", "<A-h>", [[<C-\><C-n><C-w>h]], o)
 		vim.keymap.set("t", "<A-j>", [[<C-\><C-n><C-w>j]], o)
@@ -445,14 +456,16 @@ vim.api.nvim_create_autocmd("TermOpen", {
 		-- Resize terminal window
 		vim.keymap.set("t", "<A-Up>", [[<cmd>resize +2<CR>]], o)
 		vim.keymap.set("t", "<A-Down>", [[<cmd>resize -2<CR>]], o)
-		vim.keymap.set("t", "<A-Left>", [[<cmd>vertical resize -2<CR>]], o)
-		vim.keymap.set("t", "<A-Right>", [[<cmd>vertical resize +2<CR>]], o)
+		vim.keymap.set("t", "<A-Left>", [[<cmd>vertical resize +2<CR>]], o)
+		vim.keymap.set("t", "<A-Right>", [[<cmd>vertical resize -2<CR>]], o)
 	end,
 })
 
--- Alt+j / Alt+k from normal mode to reach the terminal / editor
+-- Shortcut move window from normal mode to reach the terminal/editor
 map("n", "<A-j>", "<C-w>j", { desc = "Window down" })
 map("n", "<A-k>", "<C-w>k", { desc = "Window up" })
+map("n", "<A-h>", "<C-w>h", { desc = "Window right" })
+map("n", "<A-l>", "<C-w>l", { desc = "Window left" })
 
 -- ================================================
 -- 6. TREESITTER - syntax highlight + indent + fold

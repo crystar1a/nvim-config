@@ -10,7 +10,7 @@ My personal Neovim configuration, built around Neovim's built-in
 
 ## Requirements
 
-- **Neovim ≥ 0.12** (required for `vim.pack` and modular LSP config)
+- **Neovim ≥ 0.11** (modular LSP, treesitter folds); **≥ 0.12** recommended for `vim.pack`
 - [`git`](https://git-scm.com/) — used by `vim.pack` to clone/update plugins
 - [Nerd Font](https://www.nerdfonts.com/) — for file icons and statusline glyphs
 - A C compiler / `make` — needed to build `telescope-fzf-native.nvim`
@@ -19,8 +19,9 @@ My personal Neovim configuration, built around Neovim's built-in
 - **Windows (C/C++):** MSYS2 UCRT64 with `clang-tools-extra` for `clangd`, or install via `scoop install clangd`
 
 > **Windows users:** the config sets the built-in terminal (`:terminal`) and shell
-> commands (`:!`) to use `pwsh` (PowerShell 7) instead of `cmd.exe`. Make sure `pwsh`
-> is available on your `PATH`, or edit the `vim.o.shell` block in `init.lua`.
+> commands (`:!`) to use `pwsh` (PowerShell 7) instead of `cmd.exe` with full UTF-8
+> encoding setup. Make sure `pwsh` is available on your `PATH`, or edit the
+> `vim.o.shell` block in `init.lua`.
 
 ## Installation
 
@@ -60,11 +61,12 @@ Everything lives in `init.lua` plus modular LSP configs in `lsp/`, organized int
 | 8 | LSP | `nvim-lspconfig` + `mason.nvim` server management (modular configs in `lsp/`) |
 | 9 | Completion | `nvim-cmp` (LSP, buffer, path, cmdline sources) |
 | 10 | Formatting | `conform.nvim` (format-on-save for Lua/Python) |
+| 11 | Terminal | `toggleterm.nvim` persistent terminals with file-dir start |
 
 **Modular LSP configs** (`lsp/` directory):
-- `lsp/clangd.lua` C/C++ with MSYS2 UCRT64 paths
-- `lsp/pyright.lua` Python type checking
-- `lsp/lua_ls.lua` Lua/Neovim runtime API
+- `lsp/clangd.lua` — C/C++ with MSYS2 UCRT64 paths
+- `lsp/pyright.lua` — Python type checking
+- `lsp/lua_ls.lua` — Lua/Neovim runtime API
 
 ## Plugin manager & lockfile
 
@@ -82,13 +84,14 @@ vim.pack.update(nil, { target = "lockfile", force = true })
 
 ## Key plugins
 
-- **UI:** `dracula.nvim`, `lualine.nvim`, `bufferline.nvim`, `indent-blankline.nvim`,
+- **UI:** `dracula.nvim`, `onehalf.nvim`, `lualine.nvim`, `bufferline.nvim`, `indent-blankline.nvim`,
   `which-key.nvim`, `nvim-web-devicons`, `neoscroll.nvim`, `nvim-scrollview`, `todo-comments.nvim`
 - **Navigation:** `telescope.nvim` (+ `telescope-fzf-native.nvim`, `telescope-ui-select.nvim`)
 - **Syntax:** `nvim-treesitter` (+ `nvim-treesitter-textobjects`)
 - **LSP/Completion:** `nvim-lspconfig`, `mason.nvim`, `mason-lspconfig.nvim`,
   `mason-tool-installer.nvim`, `fidget.nvim`, `nvim-cmp` (+ `cmp-nvim-lsp`,
-  `cmp-buffer`, `cmp-path`, `cmp-cmdline`)
+  `cmp-buffer`, `cmp-path`, `cmp-cmdline`), `LuaSnip`
+- **Terminal:** `toggleterm.nvim` (persistent, toggleable terminals)
 - **Formatting:** `conform.nvim` (`stylua` for Lua, `clang-format` for C/C++)
 
 The full pinned list with exact commits is in `nvim-pack-lock.json`.
@@ -126,7 +129,9 @@ via `which-key.nvim`.
 | `<leader>f` | Normal/Visual | Format buffer/selection (`conform.nvim`) |
 | `<leader>qo` / `<leader>qc` | Normal | Open / close quickfix list |
 | `]q` / `[q` | Normal | Next / previous quickfix entry |
-| `<leader>tt` | Normal | Toggle terminal split |
+| `<leader>tt` | Normal | Toggle terminal (file's directory) |
+| `<leader>tf` | Normal | Toggle float terminal |
+| `<leader>tv` | Normal | Toggle vertical terminal |
 | `<Esc><Esc>` | Terminal | Close terminal window |
 
 ### Search (Telescope)
@@ -193,6 +198,7 @@ For `clangd` to work with MSYS2 UCRT64:
 - Format-on-save is enabled only for Lua and Python; other filetypes format
   on demand via `<leader>f`.
 - This config uses **modular LSP** (Neovim 0.11+): each server config lives in `lsp/<name>.lua`.
+- Terminal (`toggleterm.nvim`) starts in the current file's directory; unnamed buffers use cwd.
 
 ## License
 
