@@ -11,10 +11,10 @@ My personal Neovim configuration, built around Neovim's built-in
 ## Requirements
 
 - **Neovim ≥ 0.11** (modular LSP, treesitter folds); **≥ 0.12** recommended for `vim.pack`
-- [`git`](https://git-scm.com/) — used by `vim.pack` to clone/update plugins
-- [Nerd Font](https://www.nerdfonts.com/) — for file icons and statusline glyphs
-- A C compiler / `make` — needed to build `telescope-fzf-native.nvim`
-- [`ripgrep`](https://github.com/BurntSushi/ripgrep) — used by Telescope's live grep
+- [`git`](https://git-scm.com/) used by `vim.pack` to clone/update plugins
+- [Nerd Font](https://www.nerdfonts.com/) for file icons and statusline glyphs
+- A C compiler / `make` needed to build `telescope-fzf-native.nvim`
+- [`ripgrep`](https://github.com/BurntSushi/ripgrep) used by Telescope's live grep
 - LSP servers / formatters are installed automatically via `mason.nvim` on first launch
 - **Windows (C/C++):** MSYS2 UCRT64 with `clang-tools-extra` for `clangd`, or install via `scoop install clangd`
 
