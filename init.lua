@@ -21,7 +21,7 @@ vim.g.have_nerd_font = true -- flag used later to conditionally enable icon plug
 -- ==========
 
 vim.o.number = true -- show absolute line numbers
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 vim.o.cursorline = true --show which line cursor is on
 vim.o.signcolumn = "yes" -- always reserve a column for signs (git, diagnostics) to avoid text shifting
 vim.o.scrolloff = 8 -- keep 8 lines visible above/below cursor when scrolling
@@ -300,51 +300,40 @@ end
 
 -- Colorscheme
 vim.pack.add({ gh("mofiqul/dracula.nvim") })
-require("dracula").setup({
-	transparent_bg = true,
-	styles = {
-		sidebars = "transparent",
-		floats = "transparent",
-		comments = { italic = false },
-	},
-	override = {
-		BufferLineFill = { bg = "#ff0000" },
-		BufferLineBackground = { bg = "#ff0000" },
-	},
-})
-vim.cmd.colorscheme("dracula")
+vim.pack.add({ gh("MarcoKorinth/onehalf.nvim") })
+
+vim.cmd.colorscheme("dracula") -- change colorscheme at here
 
 -- Statusline: lualine (replaces mini.statusline)
 vim.pack.add({ gh("nvim-lualine/lualine.nvim") })
 require("lualine").setup({
 	options = {
-		theme = "dracula",
-		component_separators = { left = "", right = "" },
-		section_separators = { left = "", right = "" },
-		globalstatus = true,
-		disabled_filetypes = { statusline = { "alpha" } },
+		theme = bubbles_theme,
+		component_separators = "",
+		section_separators = { left = "", right = "" },
 	},
 	sections = {
-		lualine_a = { "mode" },
-		lualine_b = { "branch", "diff", "diagnostics" },
-		lualine_c = { { "filename", path = 1, symbols = { modified = " ●", readonly = " ", unnamed = "[No Name]" } } },
-		lualine_x = {
-			{
-				"encoding",
-				cond = function()
-					return vim.o.fileencoding ~= "utf-8" -- only show encoding when it's not utf-8
-				end,
-			},
-			"fileformat",
-			"filetype",
+		lualine_a = { { "mode", separator = { left = "" }, right_padding = 2 } },
+		lualine_b = { "filename", "branch" },
+		lualine_c = {
+			"%=", --[[ add your center components here in place of this comment ]]
 		},
-		lualine_y = { "progress" },
-		lualine_z = { "location" },
+		lualine_x = {},
+		lualine_y = { "filetype", "progress" },
+		lualine_z = {
+			{ "location", separator = { right = "" }, left_padding = 2 },
+		},
 	},
 	inactive_sections = {
-		lualine_c = { { "filename", path = 1 } },
-		lualine_x = { "location" },
+		lualine_a = { "filename" },
+		lualine_b = {},
+		lualine_c = {},
+		lualine_x = {},
+		lualine_y = {},
+		lualine_z = { "location" },
 	},
+	tabline = {},
+	extensions = {},
 })
 
 -- Buffer Line
@@ -438,7 +427,6 @@ local function toggle_term_here()
 end
 
 map("n", "<leader>tt", toggle_term_here, { desc = "[T]oggle [T]erminal" })
-map({ "n", "t" }, "<A-t>", toggle_term_here, { desc = "Toggle terminal" })
 map("n", "<leader>tf", "<cmd>ToggleTerm direction=float<CR>", { desc = "[T]oggle [F]loat terminal" })
 map("n", "<leader>tv", "<cmd>ToggleTerm direction=vertical<CR>", { desc = "[T]oggle [V]ertical terminal" })
 
@@ -448,12 +436,17 @@ vim.api.nvim_create_autocmd("TermOpen", {
 	pattern = "term://*toggleterm#*",
 	callback = function(ev)
 		local o = { buffer = ev.buf, silent = true }
-		vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], o) -- leave terminal mode
+		vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], o) -- exit terminal mode
 		-- Jump between windows from terminal mode
 		vim.keymap.set("t", "<A-h>", [[<C-\><C-n><C-w>h]], o)
 		vim.keymap.set("t", "<A-j>", [[<C-\><C-n><C-w>j]], o)
 		vim.keymap.set("t", "<A-k>", [[<C-\><C-n><C-w>k]], o)
 		vim.keymap.set("t", "<A-l>", [[<C-\><C-n><C-w>l]], o)
+		-- Resize terminal window
+		vim.keymap.set("t", "<A-Up>", [[<cmd>resize +2<CR>]], o)
+		vim.keymap.set("t", "<A-Down>", [[<cmd>resize -2<CR>]], o)
+		vim.keymap.set("t", "<A-Left>", [[<cmd>vertical resize -2<CR>]], o)
+		vim.keymap.set("t", "<A-Right>", [[<cmd>vertical resize +2<CR>]], o)
 	end,
 })
 
@@ -657,8 +650,8 @@ require("mason").setup({ ui = { border = "rounded" } })
 require("mason-tool-installer").setup({
 	ensure_installed = {
 		"lua-language-server", -- lua_ls
-		"clangd",              -- clangd
-		"pyright",             -- pyright
+		"clangd", -- clangd
+		"pyright", -- pyright
 		"stylua",
 	},
 })

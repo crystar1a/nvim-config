@@ -124,6 +124,14 @@
       "rev": "dfbfaa967a6f7ec50789bead7ef87e336c1fa63c",
       "src": "https://github.com/nvim-tree/nvim-web-devicons"
     },
+    "onehalf": {
+      "rev": "75eb2e97acd74660779fed8380989ee7891eec56",
+      "src": "https://github.com/sonph/onehalf"
+    },
+    "onehalf.nvim": {
+      "rev": "630cd9c0591a16655f31c83de5b2c72b583c9d78",
+      "src": "https://github.com/MarcoKorinth/onehalf.nvim"
+    },
     "plenary.nvim": {
       "rev": "74b06c6c75e4eeb3108ec01852001636d85a932b",
       "src": "https://github.com/nvim-lua/plenary.nvim"
