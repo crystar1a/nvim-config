@@ -100,6 +100,10 @@
       "rev": "a1d504892f2bc56c2e79b65c6faded2fd21f3eca",
       "src": "https://github.com/hrsh7th/nvim-cmp"
     },
+    "nvim-highlight-colors": {
+      "rev": "e4c7af0211866162d999ce0bdd6a029302e19139",
+      "src": "https://github.com/brenoprata10/nvim-highlight-colors"
+    },
     "nvim-lspconfig": {
       "rev": "ed19590a3a9792901553c388d1aadafce012f80d",
       "src": "https://github.com/neovim/nvim-lspconfig"
@@ -135,6 +139,10 @@
     "plenary.nvim": {
       "rev": "74b06c6c75e4eeb3108ec01852001636d85a932b",
       "src": "https://github.com/nvim-lua/plenary.nvim"
+    },
+    "render-markdown.nvim": {
+      "rev": "a67f826164c38c836fc6060f32b275c4c43317a7",
+      "src": "https://github.com/MeanderingProgrammer/render-markdown.nvim"
     },
     "smear-cursor.nvim": {
       "rev": "9e9378d6ee34bb3782e0e8c63d9ec8ca618b479b",

@@ -15,6 +15,7 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
 vim.g.have_nerd_font = true -- flag used later to conditionally enable icon plugins
+vim.g.augroup_prefix = "crystaria" -- default prefix for autocommand groups, change this to yours
 
 -- ==========
 -- 1. OPTIONS
@@ -120,6 +121,9 @@ map({ "n", "v" }, "<leader>d", [["_d]], { desc = "Delete to void" })
 -- Clear search highlight
 map("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
+-- Select all (replaces ggVG)
+map("n", "<C-a>", "ggVG", { desc = "Select all" })
+
 -- Format current buffer/selection with conform.nvim
 map({ "n", "v" }, "<leader>f", function()
 	require("conform").format({ async = true })
@@ -135,9 +139,10 @@ map("n", "[q", "<cmd>cprev<CR>", { desc = "Prev quickfix" })
 -- 3. AUTOCMDS
 -- ===========
 
--- Helper to create a namespaced augroup (prefixed with "crystaria_")
+-- Helper to create a namespaced augroup (prefix override via vim.g.augroup_prefix)
+local augroup_prefix = vim.g.augroup_prefix
 local augroup = function(name)
-	return vim.api.nvim_create_augroup("crystaria_" .. name, { clear = true })
+	return vim.api.nvim_create_augroup(augroup_prefix .. "_" .. name, { clear = true })
 end
 
 -- Briefly highlight yanked text
@@ -274,14 +279,39 @@ end
 -- 5. UI PLUGINS
 -- =============
 
--- Smooth scrolling animation (off)
--- vim.pack.add({ gh("karb94/neoscroll.nvim") })
--- require("neoscroll").setup({
--- 	mappings = { "<C-u>", "<C-d>", "<C-b>", "<C-f>", "zt", "zz", "zb" },
--- 	hide_cursor = true,
--- 	stop_eof = true,
--- 	easing = "quadratic",
--- })
+-- Smooth scrolling animation & Toggle
+vim.pack.add({ gh("karb94/neoscroll.nvim") })
+require("neoscroll").setup({
+	mappings = {},
+	hide_cursor = true,
+	stop_eof = true,
+	easing = "quadratic",
+})
+
+local neoscroll_on = false -- default: false
+local scroll_keys = {
+	["<C-u>"] = "-0.5",
+	["<C-d>"] = "0.5",
+	["<C-b>"] = "-1",
+	["<C-f>"] = "1",
+	["zt"] = "0",
+	["zz"] = "0.5",
+	["zb"] = "1",
+}
+
+map("n", "<leader>tn", function()
+	neoscroll_on = not neoscroll_on
+	for key, value in pairs(scroll_keys) do
+		if neoscroll_on then
+			map("n", key, function()
+				require("neoscroll").scroll(value, { duration = 150 })
+			end, { desc = "Neoscroll " .. key })
+		else
+			pcall(vim.keymap.del, "n", key)
+		end
+	end
+	vim.notify("Neoscroll: " .. (neoscroll_on and "on" or "off"), vim.log.levels.INFO)
+end, { desc = "[T]oggle [N]eoscroll" })
 
 -- Display interactive vertical scrollbar and signs
 vim.pack.add({ gh("dstein64/nvim-scrollview") })
@@ -301,6 +331,10 @@ end
 -- Colorscheme
 vim.pack.add({ gh("mofiqul/dracula.nvim") })
 vim.pack.add({ gh("MarcoKorinth/onehalf.nvim") })
+
+require("dracula").setup({
+	transparent_bg = true,
+})
 
 vim.cmd.colorscheme("dracula") -- change colorscheme at here
 
@@ -354,6 +388,23 @@ require("bufferline").setup({
 		},
 	},
 })
+
+-- Color preview for hex/rgb/hsl codes
+vim.pack.add({ gh("brenoprata10/nvim-highlight-colors") })
+require("nvim-highlight-colors").setup({
+	render = "virtual",
+	virtual_position = "eol",
+})
+
+-- Auto-close pairs (brackets, quotes, etc.)
+vim.pack.add({ gh("echasnovski/mini.nvim") })
+require("mini.pairs").setup()
+
+-- Inline diff for changed lines
+require("mini.diff").setup()
+
+map("n", "<leader>td", function()
+    require("mini.diff").toggle_overlay() end, { desc = "[T]oggle [D]iff Display" })
 
 -- Indentation guide lines
 vim.pack.add({ gh("lukas-reineke/indent-blankline.nvim") })
@@ -466,6 +517,14 @@ map("n", "<A-j>", "<C-w>j", { desc = "Window down" })
 map("n", "<A-k>", "<C-w>k", { desc = "Window up" })
 map("n", "<A-h>", "<C-w>h", { desc = "Window right" })
 map("n", "<A-l>", "<C-w>l", { desc = "Window left" })
+
+-- Render markdown as pretty text (needs treesitter markdown parser + web-devicons, both already present)
+vim.pack.add({ gh("MeanderingProgrammer/render-markdown.nvim") })
+require("render-markdown").setup({
+	file_types = { "markdown" },
+})
+
+map("n", "<leader>tm", "<cmd>RenderMarkdown Toggle<CR>", { desc = "[T]oggle [M]arkdown" })
 
 -- ================================================
 -- 6. TREESITTER - syntax highlight + indent + fold
@@ -606,6 +665,7 @@ vim.pack.add({
 
 -- Base capabilities, merged with nvim-cmp's capabilities once cmp loads
 local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.colorProvider = nil -- disable LSP document colors; nvim-highlight-colors handles it
 -- nvim-cmp will extend these capabilities automatically once it loads (see section 10)
 
 -- Enable LSP servers (configs loaded from lsp/ directory)

@@ -85,7 +85,9 @@ vim.pack.update(nil, { target = "lockfile", force = true })
 ## Key plugins
 
 - **UI:** `dracula.nvim`, `onehalf.nvim`, `lualine.nvim`, `bufferline.nvim`, `indent-blankline.nvim`,
-  `which-key.nvim`, `nvim-web-devicons`, `neoscroll.nvim`, `nvim-scrollview`, `todo-comments.nvim`
+  `which-key.nvim`, `nvim-web-devicons`, `neoscroll.nvim`, `nvim-scrollview`, `todo-comments.nvim`,
+  `nvim-highlight-colors`, `render-markdown.nvim`
+- **Editing:** `mini.nvim` (`mini.pairs` auto-close brackets, `mini.diff` inline diff)
 - **Navigation:** `telescope.nvim` (+ `telescope-fzf-native.nvim`, `telescope-ui-select.nvim`)
 - **Syntax:** `nvim-treesitter` (+ `nvim-treesitter-textobjects`)
 - **LSP/Completion:** `nvim-lspconfig`, `mason.nvim`, `mason-lspconfig.nvim`,
@@ -132,6 +134,10 @@ via `which-key.nvim`.
 | `<leader>tt` | Normal | Toggle terminal (file's directory) |
 | `<leader>tf` | Normal | Toggle float terminal |
 | `<leader>tv` | Normal | Toggle vertical terminal |
+| `<leader>tm` | Normal | Toggle markdown render (`render-markdown.nvim`) |
+| `<leader>hc` | Normal | Toggle color preview (`nvim-highlight-colors`) |
+| `<leader>tn` | Normal | Toggle neoscroll smooth scrolling |
+| `<C-a>` | Normal | Select all |
 | `<Esc><Esc>` | Terminal | Close terminal window |
 
 ### Search (Telescope)
