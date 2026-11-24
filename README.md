@@ -180,9 +180,9 @@ via `which-key.nvim`.
 
 1. Install MSYS2 using either method below. This config expects MSYS2 in `C:\msys64`.
 
-   - **Installer** — Download the x86_64 installer from the [MSYS2 website](https://www.msys2.org/),
+   - **Installer**: Download the x86_64 installer from the [MSYS2 website](https://www.msys2.org/),
      run it, and keep the default installation folder.
-   - **WinGet** — Run this command in PowerShell:
+   - **WinGet**: Run this command in PowerShell:
 
      ```powershell
      winget install --id MSYS2.MSYS2 --exact --source winget

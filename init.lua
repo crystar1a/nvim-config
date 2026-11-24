@@ -274,14 +274,14 @@ end
 -- 5. UI PLUGINS
 -- =============
 
--- Smooth scrolling animation
-vim.pack.add({ gh("karb94/neoscroll.nvim") })
-require("neoscroll").setup({
-	mappings = { "<C-u>", "<C-d>", "<C-b>", "<C-f>", "zt", "zz", "zb" },
-	hide_cursor = true,
-	stop_eof = true,
-	easing = "quadratic",
-})
+-- Smooth scrolling animation (off)
+-- vim.pack.add({ gh("karb94/neoscroll.nvim") })
+-- require("neoscroll").setup({
+-- 	mappings = { "<C-u>", "<C-d>", "<C-b>", "<C-f>", "zt", "zz", "zb" },
+-- 	hide_cursor = true,
+-- 	stop_eof = true,
+-- 	easing = "quadratic",
+-- })
 
 -- Display interactive vertical scrollbar and signs
 vim.pack.add({ gh("dstein64/nvim-scrollview") })
