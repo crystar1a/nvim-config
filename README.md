@@ -176,16 +176,39 @@ via `which-key.nvim`.
 
 ## C/C++ setup (Windows + MSYS2)
 
-For `clangd` to work with MSYS2 UCRT64:
+### Install MSYS2 UCRT64 on Windows
 
-1. Install: `pacman -S mingw-w64-ucrt-x86_64-clang-tools-extra`
-2. Add `C:/msys64/ucrt64/bin` to system PATH
-3. In CMake projects, generate compile commands:
+1. Install MSYS2 using either method below. This config expects MSYS2 in `C:\msys64`.
+
+   - **Installer** — Download the x86_64 installer from the [MSYS2 website](https://www.msys2.org/),
+     run it, and keep the default installation folder.
+   - **WinGet** — Run this command in PowerShell:
+
+     ```powershell
+     winget install --id MSYS2.MSYS2 --exact --source winget
+     ```
+
+2. Open **MSYS2 UCRT64** from the Start menu and run `pacman -Syu`.
+   If the update asks to close the terminal, confirm, reopen **MSYS2 UCRT64**,
+   and run `pacman -Syu` again to finish.
+3. In the same terminal, install GCC for C/C++ and `clangd` for Neovim.
+
+   ```bash
+   pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-clang-tools-extra
+   ```
+
+4. In Windows, open **Edit environment variables for your account**, edit
+   **Path**, and add `C:\msys64\ucrt64\bin`. Open a new PowerShell window and
+   run `g++ --version` and `clangd --version` to verify both tools are available.
+
+### Configure clangd for a project
+
+1. In CMake projects, generate compile commands:
    ```bash
    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B build
    cmd /c mklink compile_commands.json build\compile_commands.json  # Admin
    ```
-4. Or create `.clangd` in project root (see `lsp/clangd.lua` for fallback flags)
+2. Or create `.clangd` in project root (see `lsp/clangd.lua` for fallback flags)
 
 ## Notes
 
